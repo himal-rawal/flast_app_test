@@ -3,6 +3,6 @@ from flask import Flask
 from .dynamic_api import dynamic_api
 def create_app():
     app = Flask(__name__)
-    CORS(app)
+    CORS(app, origins="*")
     app.register_blueprint(dynamic_api)
     return app
