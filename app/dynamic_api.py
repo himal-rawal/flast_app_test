@@ -59,17 +59,28 @@ def list_apis():
 
 @dynamic_api.route('/clear_apis', methods=['POST'])
 def clear_apis():
+    """
+    Clear all dynamically created APIs.
+    """
     from flask import current_app
-    app = current_app
     global dynamic_routes
+    app = current_app  # Get the current Flask application instance
+
+    # Iterate through the dynamic routes
+    for endpoint in list(dynamic_routes.keys()):
+        # Remove the view function associated with the endpoint
+        if endpoint in app.view_functions:
+            del app.view_functions[endpoint]
+
+    # Clear the in-memory storage of dynamic routes
     dynamic_routes.clear()
-    app.url_map._rules = [
-        rule for rule in app.url_map._rules
-        if rule.endpoint not in app.view_functions or rule.endpoint not in dynamic_routes
-    ]
-    app.view_functions = {
-        key: value
-        for key, value in app.view_functions.items()
-        if key not in dynamic_routes
-    }
+
+    # Rebuild the URL map by reloading the application context
+    with app.app_context():
+        app.url_map._rules = []
+        app.url_map._rules_by_endpoint = {}
+        app.url_map._rules.append(app.url_map.default_subdomain)
+        for rule in app.url_map.iter_rules():
+            app.url_map._rules.append(rule)
+
     return jsonify({"message": "All dynamic routes cleared!"})
