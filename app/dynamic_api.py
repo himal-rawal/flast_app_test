@@ -56,3 +56,20 @@ def list_apis():
     List all dynamically created APIs.
     """
     return jsonify({"dynamic_routes": dynamic_routes})
+
+@dynamic_api.route('/clear_apis', methods=['POST'])
+def clear_apis():
+    from flask import current_app
+    app = current_app
+    global dynamic_routes
+    dynamic_routes.clear()
+    app.url_map._rules = [
+        rule for rule in app.url_map._rules
+        if rule.endpoint not in app.view_functions or rule.endpoint not in dynamic_routes
+    ]
+    app.view_functions = {
+        key: value
+        for key, value in app.view_functions.items()
+        if key not in dynamic_routes
+    }
+    return jsonify({"message": "All dynamic routes cleared!"})
