@@ -1,3 +1,4 @@
+import json
 from flask import Blueprint, request, jsonify
 from werkzeug.routing import Rule
 
@@ -12,7 +13,8 @@ def add_dynamic_route(app, endpoint, method, response_body):
     """
     # Define the view function
     def dynamic_view():
-        return jsonify(response_body)
+        return json.dumps(response_body, indent=2, sort_keys=False)
+       # return jsonify(response_body)
 
     # Add the rule to Flask's URL map
     rule = Rule(endpoint, methods=[method], endpoint=endpoint)
@@ -56,31 +58,3 @@ def list_apis():
     List all dynamically created APIs.
     """
     return jsonify({"dynamic_routes": dynamic_routes})
-
-@dynamic_api.route('/clear_apis', methods=['POST'])
-def clear_apis():
-    """
-    Clear all dynamically created APIs.
-    """
-    from flask import current_app
-    global dynamic_routes
-    app = current_app  # Get the current Flask application instance
-
-    # Iterate through the dynamic routes
-    for endpoint in list(dynamic_routes.keys()):
-        # Remove the view function associated with the endpoint
-        if endpoint in app.view_functions:
-            del app.view_functions[endpoint]
-
-    # Clear the in-memory storage of dynamic routes
-    dynamic_routes.clear()
-
-    # Rebuild the URL map by reloading the application context
-    with app.app_context():
-        app.url_map._rules = []
-        app.url_map._rules_by_endpoint = {}
-        app.url_map._rules.append(app.url_map.default_subdomain)
-        for rule in app.url_map.iter_rules():
-            app.url_map._rules.append(rule)
-
-    return jsonify({"message": "All dynamic routes cleared!"})
