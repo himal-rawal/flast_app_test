@@ -1,4 +1,6 @@
 import json
+
+from requests import Response
 from flask import Blueprint, request, jsonify
 from werkzeug.routing import Rule
 
@@ -13,8 +15,8 @@ def add_dynamic_route(app, endpoint, method, response_body):
     """
     # Define the view function
     def dynamic_view():
-        return json.dumps(response_body, indent=2, sort_keys=False)
-       # return jsonify(response_body)
+        response_json = json.dumps(response_body, indent=2, sort_keys=False)
+        return Response(response_json, content_type="application/json")
 
     # Add the rule to Flask's URL map
     rule = Rule(endpoint, methods=[method], endpoint=endpoint)
