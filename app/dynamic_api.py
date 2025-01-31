@@ -16,7 +16,7 @@ def add_dynamic_route(app, endpoint, method, response_body):
     # Define the view function
     def dynamic_view():
         response_json = json.dumps(response_body, indent=2, sort_keys=False)
-        return Response(response_json, content_type="application/json")
+        return Response(response_json, mimetype="application/json")
 
     # Add the rule to Flask's URL map
     rule = Rule(endpoint, methods=[method], endpoint=endpoint)
